@@ -48,3 +48,32 @@ wordcloud(words = frecuencias$word,
           max.words = 100,
           random.order = FALSE,
           colors = brewer.pal(8, "Dark2"))
+
+nrc <- read.csv("C:/Users/MI PC/Music/DATAFINAL/nrc_espanol.csv", encoding = "UTF-8")
+
+nrc <- nrc %>%
+  filter(valor == 1) %>%
+  select(palabra, sentimiento)
+
+# Cruzamos los tokens con las emociones del diccionario
+sentimientos <- tokens_emocionales %>%
+  inner_join(nrc, by = c("word" = "palabra"))
+
+#Contamos las emociones encontradas
+
+conteo_emociones <- sentimientos %>%
+  count(sentimiento, sort = TRUE)
+
+print(conteo_emociones)
+
+#Visualizador en gráfico 
+library(ggplot2)
+
+ggplot(conteo_emociones, aes(x = reorder(sentimiento, n), y = n)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Emociones detectadas en los tweets relacionados con salud mental",
+       x = "Emoción",
+       y = "Frecuencia")
+
+
