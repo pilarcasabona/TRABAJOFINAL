@@ -1,0 +1,112 @@
+---
+title: "Análisis Salud Mental COVID-19"
+author: "Pilar Casabona"
+date: "02-06-025"
+output: powerpoint_presentation
+---
+
+## Introducción
+
+Este análisis examina el contenido emocional de más de 24,000 tweets publicados en España durante el confinamiento por COVID-19. Se enfocó en detectar menciones relacionadas con **ansiedad** y **depresión**, empleando técnicas de minería de texto y un diccionario de emociones en español (NRC).
+
+---
+
+## Metodología
+
+- Se filtraron tweets por país: **España**.
+- Se limpiaron los textos (remoción de signos, minúsculas, stopwords).
+- Se identificaron mensajes con palabras clave como "ansiedad", "depresión", "triste", etc.
+- Se aplicó un análisis de sentimientos usando el diccionario **NRC en español**.
+- Se visualizaron las emociones predominantes y su evolución temporal.
+
+---
+#Carga de la base de datos, las librerías y limpieza de datos
+```{r}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(tidytext)
+library(stopwords)
+library(ggplot2)
+library(wordcloud)
+library(RColorBrewer)
+
+datos <- read_csv("C:/Users/MI PC/OneDrive/Desktop/COVID19.csv")
+
+datos_esp <- datos %>%
+  filter(country_code == "ES" & !is.na(country_code))
+
+```
+
+# Filtrar tweets relacionados con salud mental
+```{r}
+palabras_ansiedad <- c("ansiedad", "ansiosa", "ansioso", "nervios", "nerviosa", "nervioso", "ataque", "pánico")
+palabras_depresion <- c("depresión", "triste", "tristeza", "vacío", "llorar", "llanto", "desesperanza", "infeliz", "abatido", "deprimido", "deprimida")
+palabras_clave <- c(palabras_ansiedad, palabras_depresion)
+
+tweets_relacionados <- datos_esp %>%
+  filter(str_detect(str_to_lower(text), str_c(palabras_clave, collapse = "|"))) %>%
+  mutate(fecha = as.Date(created_at))
+```
+
+
+## Evolución temporal de tweets emocionales
+
+```{r, echo=FALSE}
+frecuencia_diaria <- tweets_relacionados %>%
+  count(fecha)
+ggplot(frecuencia_diaria, aes(x = fecha, y = n)) +
+  geom_line(color = "steelblue") +
+  labs(title = "Evolución de tweets sobre ansiedad y depresión",
+       x = "Fecha", y = "Cantidad de tweets")
+```
+
+#Interpretación:
+Se observa una concentración de publicaciones emocionales en fechas importantes, lo cual podría significar momentos de mayor tensión social. Estos picos coinciden probablemente con anuncios oficiales, extensión de cuarentenas o aumentos drásticos en los casos.
+
+Palabras más frecuentes en los tweets relacionados
+
+```{r, comando} 
+tokens_emocionales <- tweets_relacionados %>%
+  select(text) %>%
+  unnest_tokens(word, text) %>%
+  filter(!word %in% stopwords("es")) %>%
+  filter(str_detect(word, "[a-z]"))
+
+frecuencias <- tokens_emocionales %>%
+  count(word, sort = TRUE)
+wordcloud(words = frecuencias$word,
+          freq = frecuencias$n,
+          max.words = 100,
+          random.order = FALSE,
+          colors = brewer.pal(8, "Dark2"))
+```
+
+#Interpretación:
+La nube de palabras resalta términos como miedo, tristeza, confinamiento, casa, y COVID, evidenciando los temas dominantes en la conversación emocional.
+
+Distribución de emociones detectadas
+```{r} 
+nrc <- read.csv("C:/Users/MI PC/Music/DATAFINAL/nrc_espanol.csv", encoding = "UTF-8")
+nrc <- nrc %>% filter(valor == 1) %>% select(palabra, sentimiento)
+sentimientos <- tokens_emocionales %>% inner_join(nrc, by = c("word" = "palabra"))
+conteo_emociones <- sentimientos %>% count(sentimiento, sort = TRUE)
+print(conteo_emociones)
+ggplot(conteo_emociones, aes(x = reorder(sentimiento, n), y = n)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Emociones detectadas en los tweets",
+       x = "Emoción", y = "Frecuencia")
+```
+
+#Interpretación:
+Las emociones más frecuentes fueron tristeza, miedo y ira, lo que indica un estado de malestar colectivo. También hay presencia de anticipación y confianza, asociadas posiblemente a mensajes esperanzadores o anuncios positivos.
+
+#Conclusiones
+Twitter funcionó como reflejo emocional del confinamiento.
+
+Predominan emociones negativas como tristeza y miedo, coherentes con el contexto de crisis sanitaria.
+
+Esta metodología permite monitorear el estado emocional colectivo en tiempo real.
+
