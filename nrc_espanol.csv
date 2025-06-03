@@ -1,0 +1,17 @@
+palabra,sentimiento,valor
+alegría,alegría,1
+feliz,alegría,1
+contento,alegría,1
+triste,tristeza,1
+llorar,tristeza,1
+soledad,tristeza,1
+miedo,miedo,1
+ansiedad,miedo,1
+nervioso,miedo,1
+odio,ira,1
+rabia,ira,1
+molesto,ira,1
+paz,confianza,1
+confianza,confianza,1
+esperanza,anticipación,1
+expectativa,anticipación,1
