@@ -12,7 +12,7 @@ Este análisis examina el contenido emocional de más de 24,000 tweets publicado
 ---
 
 ## Metodología
-
+- Se obtuvo una base de datos con tweets en español durante abril de 2020 (contexto del COVID-19) a través de    kaggle.
 - Se filtraron tweets por país: **España**.
 - Se limpiaron los textos (remoción de signos, minúsculas, stopwords).
 - Se identificaron mensajes con palabras clave como "ansiedad", "depresión", "triste", etc.
